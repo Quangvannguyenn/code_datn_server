@@ -11,7 +11,6 @@ import plotly.graph_objects as go
 device = 'cpu'
 MAX_LEN = 125
 
-@st.cache
 
 tokenizer = AutoTokenizer.from_pretrained("quanqnv19/VN-Sentiment-Classification")
 model = RobertaForSequenceClassification.from_pretrained("quanqnv19/VN-Sentiment-Classification")
