@@ -1,0 +1,6 @@
+requests
+pandas
+json
+transformers
+torch
+plotly
