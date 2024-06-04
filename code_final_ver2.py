@@ -19,8 +19,8 @@ model = RobertaForSequenceClassification.from_pretrained("quanqnv19/VN-Sentiment
 
 def get_comment(comment):
         return {
-        'uid': comment['from']['id'],
-        'name': comment['from']['name'],
+        # 'uid': comment['from']['id'],
+        # 'name': comment['from']['name'],
         'time': comment['created_time'],
         'message': comment['message'], 
         'cmt_id': comment['id']
