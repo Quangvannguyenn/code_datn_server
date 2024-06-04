@@ -11,13 +11,12 @@ import plotly.graph_objects as go
 device = 'cpu'
 MAX_LEN = 125
 
-st.cache_data.clear()
-st.cache_resource.clear()
 
 tokenizer = AutoTokenizer.from_pretrained("quanqnv19/VN-Sentiment-Classification")
 model = RobertaForSequenceClassification.from_pretrained("quanqnv19/VN-Sentiment-Classification")
 
 def get_comment(comment):
+        # print(comment)
         return {
         # 'uid': comment['from']['id'],
         # 'name': comment['from']['name'],
@@ -34,9 +33,10 @@ def get_post(data):
     }
 
 def get_comments(post_id, long_term_accessToken):
-    url = f'https://graph.facebook.com/v19.0/{post_id}/comments?access_token={long_term_accessToken}'
+    url = f'https://graph.facebook.com/v19.0/{post_id}/comments?access_token={long_term_accessToken}&limit=1000'
     response = requests.request("GET", url)
     data = json.loads(response.text)
+    # print(data)
     excel_data = list(map(get_comment, data['data']))
     df = pd.DataFrame(excel_data)
     # df.to_excel('comments.xlsx', index=False)
@@ -86,7 +86,7 @@ def display_data(data_post, post):
 def process_data(comments):
     neg, pos, neu = 0, 0, 0
     for sentence in comments:
-        print(tokenizer.encode(sentence))
+        # print(tokenizer.encode(sentence))
         input_ids = torch.tensor([tokenizer.encode(sentence)])
         with torch.no_grad():
             out = model(input_ids)
@@ -94,7 +94,7 @@ def process_data(comments):
             res = np.argmax(out[0], axis=1).flatten()[0].item()
             if res == 0:
                 neg = neg + 1
-            elif neg == 1:
+            elif res == 1:
                 pos = pos + 1
             else:
                 neu = neu + 1
@@ -102,12 +102,14 @@ def process_data(comments):
 
 
 if __name__ == '__main__':
-    file = st.file_uploader("Upload Page access token file: ")
+    container = st.container(border=True)
+    file = container.file_uploader("Upload Page access token file: ")
     if file:
         for token in file:
             long_term_accessToken = token.decode("utf-8")
         feeds = get_feed(long_term_accessToken)
         for post in feeds:
             data_comments = get_comments(post['id_post'], long_term_accessToken)
+            # print(data_comments)
             display_data(data_comments, post)
 
