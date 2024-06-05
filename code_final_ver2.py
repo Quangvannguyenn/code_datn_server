@@ -36,11 +36,11 @@ def get_comments(post_id, long_term_accessToken):
     url = f'https://graph.facebook.com/v19.0/{post_id}/comments?access_token={long_term_accessToken}&limit=1000'
     response = requests.request("GET", url)
     data = json.loads(response.text)
-    # print(data)
+    print(data)
     excel_data = list(map(get_comment, data['data']))
     df = pd.DataFrame(excel_data)
     # df.to_excel('comments.xlsx', index=False)
-    return excel_data
+    return excel_data, df
 
 def get_feed(long_term_accessToken):
     url = f'https://graph.facebook.com/v19.0/me/feed?access_token={long_term_accessToken}'
@@ -57,9 +57,14 @@ def get_comments_in_post(data_post):
 
 def display_data(data_post, post):
     labels = ['Tích cực','Tiêu cực', 'Trung lập']
-    comments = get_comments_in_post(data_post)
-    pos, nev, neu = process_data(comments)
+    # comments = get_comments_in_post(data_post)
+    pos, nev, neu, labels_pos, labels_neu, labels_neg = process_data(data_post)
     print(pos+nev+neu)
+    # data_df = data_df.assign(labels = labels_eval)
+    # data_df = data_df.insert(1, "Evaluate", labels_eval, True)
+    data_df_pos = pd.DataFrame(labels_pos)
+    data_df_neu = pd.DataFrame(labels_neu)
+    data_df_neg = pd.DataFrame(labels_neg)
     values = [pos, nev, neu]
     fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='label+percent', insidetextorientation='radial')])
     fig.update_layout(height=400, width=400)
@@ -78,15 +83,40 @@ def display_data(data_post, post):
         st.write("Trung lập: "+str(neu))
     with right_col:
         st.plotly_chart(fig, use_container_width=True)
+        st.download_button(
+            "Press to Download data positive",
+            data_df_pos.to_csv(index=False).encode('utf-8'),
+            "file.csv",
+            "text/csv",
+            key=post['id_post']+"1"
+        )
+        st.download_button(
+            "Press to Download data neutral",
+            data_df_neu.to_csv(index=False).encode('utf-8'),
+            "file.csv",
+            "text/csv",
+            key=post['id_post']+"2"
+        )
+        st.download_button(
+            "Press to Download data negative",
+            data_df_neg.to_csv(index=False).encode('utf-8'),
+            "file.csv",
+            "text/csv",
+            key=post['id_post']+"3"
+        )
     print("ok")
 
 
 
 
 def process_data(comments):
+    labels_pos = []
+    labels_neg = []
+    labels_neu = []
     neg, pos, neu = 0, 0, 0
-    for sentence in comments:
+    for comment in comments:
         # print(tokenizer.encode(sentence))
+        sentence = comment['message']
         input_ids = torch.tensor([tokenizer.encode(sentence)])
         with torch.no_grad():
             out = model(input_ids)
@@ -94,11 +124,14 @@ def process_data(comments):
             res = np.argmax(out[0], axis=1).flatten()[0].item()
             if res == 0:
                 neg = neg + 1
+                labels_neg.append(comment)
             elif res == 1:
                 pos = pos + 1
+                labels_pos.append(comment)
             else:
                 neu = neu + 1
-    return pos, neg, neu
+                labels_neu.append(comment)
+    return pos, neg, neu, labels_pos, labels_neu, labels_neg
 
 
 if __name__ == '__main__':
@@ -109,7 +142,7 @@ if __name__ == '__main__':
             long_term_accessToken = token.decode("utf-8")
         feeds = get_feed(long_term_accessToken)
         for post in feeds:
-            data_comments = get_comments(post['id_post'], long_term_accessToken)
+            data_comments, data_df = get_comments(post['id_post'], long_term_accessToken)
             # print(data_comments)
             display_data(data_comments, post)
 
