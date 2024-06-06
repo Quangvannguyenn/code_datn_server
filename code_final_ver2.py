@@ -84,21 +84,21 @@ def display_data(data_post, post):
     with right_col:
         st.plotly_chart(fig, use_container_width=True)
         st.download_button(
-            "Press to Download data positive",
+            "Tệp bình luận đánh giá tích cực",
             data_df_pos.to_csv(index=False).encode('utf-8'),
             "file.csv",
             "text/csv",
             key=post['id_post']+"1"
         )
         st.download_button(
-            "Press to Download data neutral",
+            "Tệp bình luận đánh giá trung lập",
             data_df_neu.to_csv(index=False).encode('utf-8'),
             "file.csv",
             "text/csv",
             key=post['id_post']+"2"
         )
         st.download_button(
-            "Press to Download data negative",
+            "Tệp bình luận đánh giá tiêu cực",
             data_df_neg.to_csv(index=False).encode('utf-8'),
             "file.csv",
             "text/csv",
@@ -120,7 +120,7 @@ def process_data(comments):
         input_ids = torch.tensor([tokenizer.encode(sentence)])
         with torch.no_grad():
             out = model(input_ids)
-            print(out.logits.softmax(dim=-1).tolist())
+            # print(out.logits.softmax(dim=-1).tolist())
             res = np.argmax(out[0], axis=1).flatten()[0].item()
             if res == 0:
                 neg = neg + 1
