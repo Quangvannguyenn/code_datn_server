@@ -103,7 +103,7 @@ def display(data):
     list_clean = []
     list_offensive = []
     list_hate = []
-    labels = ['CLEAN','OFFENSIVE', 'HATE']
+    labels = ['CLEAN - Sạch','OFFENSIVE - Tiêu cực', 'HATE - Xúc phạm']
     process(data, list_clean, list_offensive, list_hate)
     values = [len(list_clean), len(list_offensive), len(list_hate)]
     fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='label+percent', insidetextorientation='radial')])
