@@ -144,6 +144,9 @@ if __name__ == '__main__':
     input_id = st.text_input("Nhập vào URL Video YouTube")
     if len(input_id)>2:
         id_video = input_id.split("v=")[1]
-        data = get_data_comment(id_video)
-        display(data)
-        st.dataframe(data)
+        try:
+            data = get_data_comment(id_video)
+            display(data)
+            st.dataframe(data)
+        except:
+            st.write("Video không thuộc quản lý của API V3")
